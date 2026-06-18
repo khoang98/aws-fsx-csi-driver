@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -46,14 +45,6 @@ const (
 	// creation time is around 5 minutes, and update time varies depending on
 	// target file system values
 	PollCheckTimeout = 10 * time.Minute
-	// CachePollInterval specifies the interval to poll for filesystem changes to update the cache
-	CachePollInterval = 1 * time.Minute
-)
-
-// Tags
-const (
-	// VolumeNameTagKey is the key value that refers to the volume's name.
-	VolumeNameTagKey = "CSIVolumeName"
 )
 
 // Set during build time via -ldflags
@@ -123,14 +114,11 @@ type Cloud interface {
 	DescribeFileSystem(ctx context.Context, fileSystemId string) (fs *FileSystem, err error)
 	WaitForFileSystemAvailable(ctx context.Context, fileSystemId string) error
 	WaitForFileSystemResize(ctx context.Context, fileSystemId string, resizeGiB int32) error
-	FindFileSystemByVolumeName(ctx context.Context, volumeName string) (*FileSystem, error)
 }
 
 type cloud struct {
-	region      string
-	fsx         FSx
-	volumeCache map[string]*FileSystem
-	cacheMutex  sync.RWMutex
+	region string
+	fsx    FSx
 }
 
 // NewCloud returns a new instance of AWS cloud
@@ -147,11 +135,9 @@ func NewCloud(region string) (Cloud, error) {
 
 	svc := fsx.NewFromConfig(awsConfig)
 	c := &cloud{
-		region:      region,
-		fsx:         svc,
-		volumeCache: make(map[string]*FileSystem),
+		region: region,
+		fsx:    svc,
 	}
-	go c.pollFileSystems()
 	return c, nil
 }
 
@@ -217,13 +203,7 @@ func (c *cloud) CreateFileSystem(ctx context.Context, volumeName string, fileSys
 		}
 		lustreConfiguration.MetadataConfiguration = metadataConfiguration
 	}
-	var tags = []types.Tag{
-		{
-			Key:   aws.String(VolumeNameTagKey),
-			Value: aws.String(volumeName),
-		},
-	}
-
+	var tags []types.Tag
 	for _, extraTag := range fileSystemOptions.ExtraTags {
 		extraTagSplit := strings.Split(extraTag, "=")
 		tagKey := extraTagSplit[0]
@@ -280,11 +260,6 @@ func (c *cloud) CreateFileSystem(ctx context.Context, volumeName string, fileSys
 		PerUnitStorageThroughput: perUnitStorageThroughput,
 	}
 
-	c.cacheMutex.Lock()
-	c.volumeCache[volumeName] = fs
-	c.cacheMutex.Unlock()
-	klog.V(4).InfoS("CreateFileSystem: added to cache", "volumeName", volumeName)
-
 	return fs, nil
 }
 
@@ -327,16 +302,6 @@ func (c *cloud) DeleteFileSystem(ctx context.Context, fileSystemId string) (err 
 			return ErrNotFound
 		}
 		return fmt.Errorf("DeleteFileSystem failed: %v", err)
-	}
-
-	c.cacheMutex.Lock()
-	defer c.cacheMutex.Unlock()
-	for volName, fs := range c.volumeCache {
-		if fs.FileSystemId == fileSystemId {
-			delete(c.volumeCache, volName)
-			klog.V(4).InfoS("DeleteFileSystem: removed from cache", "volumeName", volName, "fileSystemId", fileSystemId)
-			break
-		}
 	}
 
 	return nil
@@ -473,87 +438,3 @@ func isBadRequestUpdateInProgress(err error) bool {
 	return errors.As(err, &badRequest) && strings.Contains(err.Error(), "Unable to perform the storage capacity update. There is an update already in progress.")
 }
 
-func (c *cloud) FindFileSystemByVolumeName(ctx context.Context, volumeName string) (*FileSystem, error) {
-	c.cacheMutex.RLock()
-	defer c.cacheMutex.RUnlock()
-
-	if fs, ok := c.volumeCache[volumeName]; ok {
-		klog.V(4).InfoS("FindFileSystemByVolumeName: found in cache", "volumeName", volumeName)
-		return fs, nil
-	}
-
-	klog.V(4).InfoS("FindFileSystemByVolumeName: not found in cache", "volumeName", volumeName)
-	return nil, ErrNotFound
-}
-
-func (c *cloud) pollFileSystems() {
-	for {
-		newCache := make(map[string]*FileSystem)
-		var nextToken *string
-		const maxResults = 1000
-
-		ctx := context.Background()
-
-		for {
-			input := &fsx.DescribeFileSystemsInput{
-				MaxResults: aws.Int32(maxResults),
-				NextToken:  nextToken,
-			}
-
-			output, err := c.fsx.DescribeFileSystems(ctx, input)
-			if err != nil {
-				klog.ErrorS(err, "pollFileSystems: failed to describe filesystems")
-				break // break inner loop, sleep and retry
-			}
-
-			for _, fs := range output.FileSystems {
-				if fs.Lifecycle != types.FileSystemLifecycleAvailable &&
-					fs.Lifecycle != types.FileSystemLifecycleCreating {
-					continue
-				}
-
-				var volumeName string
-				for _, tag := range fs.Tags {
-					if *tag.Key == VolumeNameTagKey {
-						volumeName = *tag.Value
-						break
-					}
-				}
-
-				if volumeName != "" {
-					mountName := "fsx"
-					if fs.LustreConfiguration.MountName != nil {
-						mountName = *fs.LustreConfiguration.MountName
-					}
-
-					perUnitStorageThroughput := int32(0)
-					if fs.LustreConfiguration.PerUnitStorageThroughput != nil {
-						perUnitStorageThroughput = *fs.LustreConfiguration.PerUnitStorageThroughput
-					}
-
-					newCache[volumeName] = &FileSystem{
-						FileSystemId:             *fs.FileSystemId,
-						CapacityGiB:              *fs.StorageCapacity,
-						DnsName:                  *fs.DNSName,
-						MountName:                mountName,
-						StorageType:              string(fs.StorageType),
-						DeploymentType:           string(fs.LustreConfiguration.DeploymentType),
-						PerUnitStorageThroughput: perUnitStorageThroughput,
-					}
-				}
-			}
-
-			if output.NextToken == nil {
-				break
-			}
-			nextToken = output.NextToken
-		}
-
-		c.cacheMutex.Lock()
-		c.volumeCache = newCache
-		c.cacheMutex.Unlock()
-		klog.V(4).InfoS("pollFileSystems: cache updated", "itemCount", len(newCache))
-
-		time.Sleep(CachePollInterval)
-	}
-}

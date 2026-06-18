@@ -70,8 +70,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -133,8 +132,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -192,8 +190,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -252,8 +249,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -314,8 +310,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -341,8 +336,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -410,8 +404,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -437,8 +430,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -466,8 +458,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -494,8 +485,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -522,8 +512,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -546,8 +535,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -572,8 +560,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -639,8 +626,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -699,8 +685,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -759,8 +744,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -786,8 +770,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -854,8 +837,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -924,8 +906,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -994,8 +975,7 @@ func TestCreateFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				req := &FileSystemOptions{
@@ -1039,8 +1019,7 @@ func TestDeleteFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				output := &fsx.DeleteFileSystemOutput{}
@@ -1060,8 +1039,7 @@ func TestDeleteFileSystem(t *testing.T) {
 				mockCtl := gomock.NewController(t)
 				mockFSx := mocks.NewMockFSx(mockCtl)
 				c := &cloud{
-					fsx:         mockFSx,
-					volumeCache: make(map[string]*FileSystem),
+					fsx: mockFSx,
 				}
 
 				ctx := context.Background()

@@ -74,6 +74,7 @@ func TestCreateVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.CreateVolumeRequest{
@@ -94,7 +95,6 @@ func TestCreateVolume(t *testing.T) {
 					DnsName:      dnsName,
 					MountName:    mountName,
 				}
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(fs, nil)
 				mockCloud.EXPECT().WaitForFileSystemAvailable(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil)
 
@@ -146,6 +146,7 @@ func TestCreateVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.CreateVolumeRequest{
@@ -171,7 +172,6 @@ func TestCreateVolume(t *testing.T) {
 					DnsName:      dnsName,
 					MountName:    mountName,
 				}
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(fs, nil)
 				mockCloud.EXPECT().WaitForFileSystemAvailable(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil)
 
@@ -223,6 +223,7 @@ func TestCreateVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.CreateVolumeRequest{
@@ -253,7 +254,6 @@ func TestCreateVolume(t *testing.T) {
 					DnsName:      dnsName,
 					MountName:    mountName,
 				}
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(fs, nil)
 				mockCloud.EXPECT().WaitForFileSystemAvailable(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil)
 
@@ -305,6 +305,7 @@ func TestCreateVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.CreateVolumeRequest{
@@ -338,7 +339,6 @@ func TestCreateVolume(t *testing.T) {
 					DnsName:      dnsName,
 					MountName:    mountName,
 				}
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(fs, nil)
 				mockCloud.EXPECT().WaitForFileSystemAvailable(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil)
 
@@ -390,6 +390,7 @@ func TestCreateVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.CreateVolumeRequest{
@@ -411,7 +412,6 @@ func TestCreateVolume(t *testing.T) {
 					DnsName:      dnsName,
 					MountName:    mountName,
 				}
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(fs, nil)
 				mockCloud.EXPECT().WaitForFileSystemAvailable(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil)
 
@@ -463,6 +463,7 @@ func TestCreateVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.CreateVolumeRequest{
@@ -478,7 +479,6 @@ func TestCreateVolume(t *testing.T) {
 				}
 
 				ctx := context.Background()
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
 				_, err := driver.CreateVolume(ctx, req)
 				if err == nil {
 					t.Fatal("CreateVolume is not failed")
@@ -497,6 +497,7 @@ func TestCreateVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.CreateVolumeRequest{
@@ -528,6 +529,7 @@ func TestCreateVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.CreateVolumeRequest{
@@ -560,6 +562,7 @@ func TestCreateVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.CreateVolumeRequest{
@@ -589,6 +592,7 @@ func TestCreateVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.CreateVolumeRequest{
@@ -603,7 +607,6 @@ func TestCreateVolume(t *testing.T) {
 				}
 
 				ctx := context.Background()
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(nil, cloud.ErrFsExistsDiffSize)
 
 				_, err := driver.CreateVolume(ctx, req)
@@ -639,6 +642,7 @@ func TestDeleteVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.DeleteVolumeRequest{
@@ -666,6 +670,7 @@ func TestDeleteVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.DeleteVolumeRequest{}
@@ -689,6 +694,7 @@ func TestDeleteVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.DeleteVolumeRequest{
@@ -715,6 +721,7 @@ func TestDeleteVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				req := &csi.DeleteVolumeRequest{
@@ -758,6 +765,7 @@ func TestExpandVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()
@@ -800,6 +808,7 @@ func TestExpandVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()
@@ -840,6 +849,7 @@ func TestExpandVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()
@@ -871,6 +881,7 @@ func TestExpandVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()
@@ -900,6 +911,7 @@ func TestExpandVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()
@@ -933,6 +945,7 @@ func TestExpandVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()
@@ -966,6 +979,7 @@ func TestExpandVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()
@@ -1012,6 +1026,7 @@ func TestExpandVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()
@@ -1057,6 +1072,7 @@ func TestExpandVolume(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()
@@ -1108,6 +1124,7 @@ func TestControllerGetCapabilities(t *testing.T) {
 		cloud:         mockCloud,
 		inFlight:      internal.NewInFlight(),
 		driverOptions: &DriverOptions{},
+		fsCache:       make(map[string]string),
 	}
 
 	ctx := context.Background()
@@ -1144,6 +1161,7 @@ func TestValidateVolumeCapabilities(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()
@@ -1178,6 +1196,7 @@ func TestValidateVolumeCapabilities(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()
@@ -1205,6 +1224,7 @@ func TestValidateVolumeCapabilities(t *testing.T) {
 					cloud:         mockCloud,
 					inFlight:      internal.NewInFlight(),
 					driverOptions: &DriverOptions{},
+					fsCache:       make(map[string]string),
 				}
 
 				ctx := context.Background()

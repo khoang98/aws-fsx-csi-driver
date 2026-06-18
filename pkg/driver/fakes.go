@@ -43,6 +43,7 @@ func NewFakeDriver(endpoint string) *Driver {
 			cloud:         cloud.NewFakeCloudProvider(),
 			inFlight:      internal.NewInFlight(),
 			driverOptions: &driverOptions,
+			fsCache:       make(map[string]string),
 		},
 		nodeService: nodeService{
 			mounter:       NewFakeMounter(),
