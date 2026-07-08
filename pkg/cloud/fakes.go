@@ -106,11 +106,10 @@ func (c *FakeCloudProvider) WaitForFileSystemResize(ctx context.Context, fileSys
 	return nil
 }
 
-func (c *FakeCloudProvider) FindFileSystemByVolumeName(ctx context.Context, volumeName string) (*FileSystem, error) {
-	// Check if filesystem exists for this volume name
+func (c *FakeCloudProvider) GetFileSystemIdByVolumeName(volumeName string) (string, bool) {
 	fs, exists := c.fileSystems[volumeName]
 	if exists {
-		return fs, nil
+		return fs.FileSystemId, true
 	}
-	return nil, ErrNotFound
+	return "", false
 }

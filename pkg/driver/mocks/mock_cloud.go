@@ -85,19 +85,19 @@ func (mr *MockCloudMockRecorder) DescribeFileSystem(ctx, fileSystemId any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeFileSystem", reflect.TypeOf((*MockCloud)(nil).DescribeFileSystem), ctx, fileSystemId)
 }
 
-// FindFileSystemByVolumeName mocks base method.
-func (m *MockCloud) FindFileSystemByVolumeName(ctx context.Context, volumeName string) (*cloud.FileSystem, error) {
+// GetFileSystemIdByVolumeName mocks base method.
+func (m *MockCloud) GetFileSystemIdByVolumeName(volumeName string) (string, bool) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindFileSystemByVolumeName", ctx, volumeName)
-	ret0, _ := ret[0].(*cloud.FileSystem)
-	ret1, _ := ret[1].(error)
+	ret := m.ctrl.Call(m, "GetFileSystemIdByVolumeName", volumeName)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
-// FindFileSystemByVolumeName indicates an expected call of FindFileSystemByVolumeName.
-func (mr *MockCloudMockRecorder) FindFileSystemByVolumeName(ctx, volumeName any) *gomock.Call {
+// GetFileSystemIdByVolumeName indicates an expected call of GetFileSystemIdByVolumeName.
+func (mr *MockCloudMockRecorder) GetFileSystemIdByVolumeName(volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindFileSystemByVolumeName", reflect.TypeOf((*MockCloud)(nil).FindFileSystemByVolumeName), ctx, volumeName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFileSystemIdByVolumeName", reflect.TypeOf((*MockCloud)(nil).GetFileSystemIdByVolumeName), volumeName)
 }
 
 // ResizeFileSystem mocks base method.

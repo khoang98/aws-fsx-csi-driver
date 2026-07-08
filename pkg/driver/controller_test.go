@@ -94,7 +94,7 @@ func TestCreateVolume(t *testing.T) {
 					DnsName:      dnsName,
 					MountName:    mountName,
 				}
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
+				mockCloud.EXPECT().GetFileSystemIdByVolumeName(gomock.Eq(volumeName)).Return("", false)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(fs, nil)
 				mockCloud.EXPECT().WaitForFileSystemAvailable(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil)
 
@@ -171,7 +171,7 @@ func TestCreateVolume(t *testing.T) {
 					DnsName:      dnsName,
 					MountName:    mountName,
 				}
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
+				mockCloud.EXPECT().GetFileSystemIdByVolumeName(gomock.Eq(volumeName)).Return("", false)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(fs, nil)
 				mockCloud.EXPECT().WaitForFileSystemAvailable(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil)
 
@@ -253,7 +253,7 @@ func TestCreateVolume(t *testing.T) {
 					DnsName:      dnsName,
 					MountName:    mountName,
 				}
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
+				mockCloud.EXPECT().GetFileSystemIdByVolumeName(gomock.Eq(volumeName)).Return("", false)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(fs, nil)
 				mockCloud.EXPECT().WaitForFileSystemAvailable(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil)
 
@@ -338,7 +338,7 @@ func TestCreateVolume(t *testing.T) {
 					DnsName:      dnsName,
 					MountName:    mountName,
 				}
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
+				mockCloud.EXPECT().GetFileSystemIdByVolumeName(gomock.Eq(volumeName)).Return("", false)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(fs, nil)
 				mockCloud.EXPECT().WaitForFileSystemAvailable(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil)
 
@@ -411,7 +411,7 @@ func TestCreateVolume(t *testing.T) {
 					DnsName:      dnsName,
 					MountName:    mountName,
 				}
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
+				mockCloud.EXPECT().GetFileSystemIdByVolumeName(gomock.Eq(volumeName)).Return("", false)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(fs, nil)
 				mockCloud.EXPECT().WaitForFileSystemAvailable(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil)
 
@@ -454,6 +454,115 @@ func TestCreateVolume(t *testing.T) {
 			},
 		},
 		{
+			name: "success: retry uses cached filesystem ID (idempotency)",
+			testFunc: func(t *testing.T) {
+				mockCtl := gomock.NewController(t)
+				mockCloud := mocks.NewMockCloud(mockCtl)
+
+				driver := controllerService{
+					cloud:         mockCloud,
+					inFlight:      internal.NewInFlight(),
+					driverOptions: &DriverOptions{},
+				}
+
+				req := &csi.CreateVolumeRequest{
+					Name: volumeName,
+					VolumeCapabilities: []*csi.VolumeCapability{
+						stdVolCap,
+					},
+					Parameters: map[string]string{
+						volumeParamsSubnetId:         subnetId,
+						volumeParamsSecurityGroupIds: securityGroupIds,
+					},
+				}
+
+				ctx := context.Background()
+				fs := &cloud.FileSystem{
+					FileSystemId: fileSystemId,
+					CapacityGiB:  volumeSizeGiB,
+					DnsName:      dnsName,
+					MountName:    mountName,
+				}
+
+				// Simulate retry: cache already has the filesystem ID from a previous call
+				mockCloud.EXPECT().GetFileSystemIdByVolumeName(gomock.Eq(volumeName)).Return(fileSystemId, true)
+				mockCloud.EXPECT().DescribeFileSystem(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(fs, nil)
+				// CreateFileSystem must NOT be called on retry
+				mockCloud.EXPECT().CreateFileSystem(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				mockCloud.EXPECT().WaitForFileSystemAvailable(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil)
+
+				resp, err := driver.CreateVolume(ctx, req)
+				if err != nil {
+					t.Fatalf("CreateVolume is failed: %v", err)
+				}
+
+				if resp.Volume == nil {
+					t.Fatal("resp.Volume is nil")
+				}
+
+				if resp.Volume.VolumeId != fileSystemId {
+					t.Fatalf("VolumeId mismatches. actual: %v expected: %v", resp.Volume.VolumeId, fileSystemId)
+				}
+
+				dnsname, exists := resp.Volume.VolumeContext[volumeContextDnsName]
+				if !exists {
+					t.Fatal("dnsname is missing")
+				}
+
+				if dnsname != dnsName {
+					t.Fatalf("dnsname mismatches. actual: %v expected: %v", dnsname, dnsName)
+				}
+
+				mountname, exists := resp.Volume.VolumeContext[volumeContextMountName]
+				if !exists {
+					t.Fatal("mountname is missing")
+				}
+
+				if mountname != mountName {
+					t.Fatalf("mountname mismatches. actual: %v expected: %v", mountname, mountName)
+				}
+
+				mockCtl.Finish()
+			},
+		},
+		{
+			name: "fail: retry cached filesystem describe fails",
+			testFunc: func(t *testing.T) {
+				mockCtl := gomock.NewController(t)
+				mockCloud := mocks.NewMockCloud(mockCtl)
+
+				driver := controllerService{
+					cloud:         mockCloud,
+					inFlight:      internal.NewInFlight(),
+					driverOptions: &DriverOptions{},
+				}
+
+				req := &csi.CreateVolumeRequest{
+					Name: volumeName,
+					VolumeCapabilities: []*csi.VolumeCapability{
+						stdVolCap,
+					},
+					Parameters: map[string]string{
+						volumeParamsSubnetId:         subnetId,
+						volumeParamsSecurityGroupIds: securityGroupIds,
+					},
+				}
+
+				ctx := context.Background()
+
+				// Cache hit but DescribeFileSystem fails (e.g., FS was deleted)
+				mockCloud.EXPECT().GetFileSystemIdByVolumeName(gomock.Eq(volumeName)).Return(fileSystemId, true)
+				mockCloud.EXPECT().DescribeFileSystem(gomock.Eq(ctx), gomock.Eq(fileSystemId)).Return(nil, cloud.ErrNotFound)
+
+				_, err := driver.CreateVolume(ctx, req)
+				if err == nil {
+					t.Fatal("CreateVolume should have failed")
+				}
+
+				mockCtl.Finish()
+			},
+		},
+		{
 			name: "fail: invalid extraTags",
 			testFunc: func(t *testing.T) {
 				mockCtl := gomock.NewController(t)
@@ -478,7 +587,7 @@ func TestCreateVolume(t *testing.T) {
 				}
 
 				ctx := context.Background()
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
+				mockCloud.EXPECT().GetFileSystemIdByVolumeName(gomock.Eq(volumeName)).Return("", false)
 				_, err := driver.CreateVolume(ctx, req)
 				if err == nil {
 					t.Fatal("CreateVolume is not failed")
@@ -603,7 +712,7 @@ func TestCreateVolume(t *testing.T) {
 				}
 
 				ctx := context.Background()
-				mockCloud.EXPECT().FindFileSystemByVolumeName(gomock.Eq(ctx), gomock.Eq(volumeName)).Return(nil, cloud.ErrNotFound)
+				mockCloud.EXPECT().GetFileSystemIdByVolumeName(gomock.Eq(volumeName)).Return("", false)
 				mockCloud.EXPECT().CreateFileSystem(gomock.Eq(ctx), gomock.Eq(volumeName), gomock.Any()).Return(nil, cloud.ErrFsExistsDiffSize)
 
 				_, err := driver.CreateVolume(ctx, req)

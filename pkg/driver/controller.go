@@ -18,7 +18,6 @@ package driver
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -140,24 +139,27 @@ func (d *controllerService) CreateVolume(ctx context.Context, req *csi.CreateVol
 	}
 	defer d.inFlight.Delete(volName)
 
-	existingFS, err := d.cloud.FindFileSystemByVolumeName(ctx, volName)
-	if err != nil && !errors.Is(err, cloud.ErrNotFound) {
-		return nil, status.Errorf(codes.Internal, "Failed to check existing filesystem: %v", err)
-	}
-
+	// Check if we already know the filesystem ID for this volume (from a previous CreateFileSystem call).
+	// If so, skip CreateFileSystem and go straight to polling DescribeFileSystems.
+	// This avoids calling CreateFileSystem with a potentially expired ClientRequestToken on retry.
 	var fs *cloud.FileSystem
-	if existingFS != nil {
-		// Filesystem exists, skip creation
-		klog.V(2).InfoS("Found existing filesystem",
-			"volumeName", volName, "fsId", existingFS.FileSystemId)
+	if fsId, ok := d.cloud.GetFileSystemIdByVolumeName(volName); ok {
+		klog.V(2).InfoS("CreateVolume: found cached filesystem ID, skipping CreateFileSystem",
+			"volumeName", volName, "fsId", fsId)
+		existingFS, err := d.cloud.DescribeFileSystem(ctx, fsId)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "Failed to describe cached filesystem %s: %v", fsId, err)
+		}
+
+		// Validate that the requested capacity matches the existing filesystem.
+		// This handles the case where a volume with the same name but different size is requested.
 		capRange := req.GetCapacityRange()
 		if capRange != nil && capRange.GetRequiredBytes() > 0 {
-			// Calculate what the requested size WOULD BE after rounding
 			volumeParams := req.GetParameters()
 			deploymentType := volumeParams[volumeParamsDeploymentType]
 			storageType := volumeParams[volumeParamsStorageType]
 
-			var perUnitThroughput int32 = 0
+			var perUnitThroughput int32
 			if val, ok := volumeParams[volumeParamsPerUnitStorageThroughput]; ok {
 				n, err := strconv.ParseInt(val, 10, 32)
 				if err == nil {
@@ -165,18 +167,17 @@ func (d *controllerService) CreateVolume(ctx context.Context, req *csi.CreateVol
 				}
 			}
 
-			// Round the requested size using the same logic as creation
 			roundedSizeGiB := util.RoundUpVolumeSize(capRange.GetRequiredBytes(), deploymentType, storageType, perUnitThroughput)
 			roundedSizeInt32, err := util.ConvertToInt32(roundedSizeGiB)
 			if err != nil {
 				return nil, status.Errorf(codes.OutOfRange, "Request storage capacity %d GiB is too large", roundedSizeGiB)
 			}
 
-			// Compare rounded requested size with existing size
 			if existingFS.CapacityGiB != roundedSizeInt32 {
 				return nil, status.Error(codes.AlreadyExists, cloud.ErrFsExistsDiffSize.Error())
 			}
 		}
+
 		fs = existingFS
 	} else {
 		// No existing filesystem, create new one
@@ -308,6 +309,7 @@ func (d *controllerService) CreateVolume(ctx context.Context, req *csi.CreateVol
 		}
 		fsOptions.ExtraTags = tagArray
 
+		var err error
 		fs, err = d.cloud.CreateFileSystem(ctx, volName, fsOptions)
 		if err != nil {
 			switch err {
@@ -319,7 +321,7 @@ func (d *controllerService) CreateVolume(ctx context.Context, req *csi.CreateVol
 		}
 	}
 
-	err = d.cloud.WaitForFileSystemAvailable(ctx, fs.FileSystemId)
+	err := d.cloud.WaitForFileSystemAvailable(ctx, fs.FileSystemId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Filesystem is not ready: %v", err)
 	}
