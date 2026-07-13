@@ -106,6 +106,9 @@ if [[ ! -e ${GINKGO_BIN} ]]; then
   popd
 fi
 
+loudecho "Cleaning up old FSx filesystems"
+"${BASE_DIR}"/cleanup-old-filesystems.sh
+
 ecr_build_and_push "${REGION}" \
   "${AWS_ACCOUNT_ID}" \
   "${IMAGE_NAME}" \
